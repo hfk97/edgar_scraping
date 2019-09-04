@@ -5,7 +5,7 @@
 ```diff
 - WIP, options have not been integrated yet
 ```
-
+- ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) `WIP; options have not been integrated yet`
  
 <p><strong>Options:</strong>
 
