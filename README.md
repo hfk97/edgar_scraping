@@ -3,10 +3,9 @@
 <p>This project is designed to gelp people extract cashflow statements, balance sheets and income statement from 10-K/Qs the SEC Edgar Database.</p>
 
 ```diff
-- WIP, options have not been integrated yet
+WIP, options have not been integrated yet
 ```
-- ![#f03c15](https://placehold.it/15/f03c15/000000?text=WIP) `WIP; options have not been integrated yet`
- 
+
 <p><strong>Options:</strong>
 
 - HTML or CSV format
