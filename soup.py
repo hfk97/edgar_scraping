@@ -279,11 +279,6 @@ def initialize_db10k():
 initialize_db10k()
 
 
-#ToDo load 10ks
-
-
-#ToDo: 10qs
-#soup = make_soup("https://www.sec.gov/Archives/edgar/data/2488/000000248818000189/amd0929201810q.htm")
 
 #ToDo: 10ks
 #soup = make_soup("https://www.sec.gov/Archives/edgar/data/2488/000000248819000011/amd-12292018x10k.htm")
