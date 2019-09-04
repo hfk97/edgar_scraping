@@ -3,7 +3,9 @@
 <p>This project is designed to gelp people extract cashflow statements, balance sheets and income statement from 10-K/Qs the SEC Edgar Database.</p>
 
 
- <span style="color:red">WIP, options have not been integrated yet</span>
+'''diff 
+- WIP, options have not been integrated yet
+'''
  
 <p><strong>Options:</strong>
 
