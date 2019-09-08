@@ -1,6 +1,7 @@
 import subprocess
 import sys
 import importlib
+import os
 
 
 
@@ -45,19 +46,7 @@ def make_soup(url):
     return soup
 
 
-try:
-    companies
-except NameError:
-    try:
-        companies=load_obj("sample_companies")
-        #companies=load_obj("companies")
-
-    except FileNotFoundError:
-        import init_companies
-        companies=load_obj("sample_companies")
-        #companies=load_obj("companies")
-
-
+#delete companies part here
 
 
 def identify(s):
@@ -276,7 +265,6 @@ def initialize_db10k():
     print(issue_log)
 
 
-initialize_db10k()
 
 
 
@@ -286,17 +274,13 @@ initialize_db10k()
 
 
 
-
-
-
 sys.exit()
 
-#ToDo Improve parsing
+
+
 
 
 soup=make_soup("https://www.sec.gov//Archives/edgar/data/1045810/000104581011000015/fy2011form10k.htm")
-
-
 
 filing,spec=identify(soup.filename.text.split("\n", 1)[0])
 
@@ -318,7 +302,15 @@ except UnboundLocalError as e:
 
 
 
-tables = gettables(soup)
+if not os.path.exists("./EdgarData"):
+    os.makedirs("EdgarData")
+
+if not os.path.exists("./EdgarData/"+ticker):
+    os.makedirs("./EdgarData/"+ticker)
+
+if not os.path.exists("./EdgarData/"+ticker+"/"+year):
+    os.makedirs("./EdgarData/" + ticker + "/" + year)
+
 
 
 #Todo fix issues from terminal

@@ -59,29 +59,23 @@ def load_obj(name ):
         return pickle.load(pickle_file)
 
 
-try:
-    companies
-except NameError:
+
+
+
+def main(startyear=2015,endyear=2018,tickers=None):
+
     try:
-        companies=load_obj("sample_companies")
-        #companies=load_obj("companies")
+        companies
+    except NameError:
+        try:
+            companies = load_obj("sample_companies")
+            # companies=load_obj("companies")
 
-    except FileNotFoundError:
-        import init_companies
-        companies=load_obj("sample_companies")
-        #companies=load_obj("companies")
+        except FileNotFoundError:
+            import init_companies
+            companies = load_obj("sample_companies")
+            # companies=load_obj("companies")
 
-
-
-
-
-
-
-
-
-queue=[]
-
-def main():
     global queue
     queue=[]
 
@@ -98,61 +92,64 @@ def main():
 
     newlinks=0
 
-    startyear = 2008  # year for first reports
-
     for c in companies:
-        CIK = companies[c][2]
 
-        url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=" + str(
-            CIK) + "&type=10-K&dateb=&owner=exclude&count=40"
+        if (tickers != None and c in tickers) or tickers==None:
 
-        print("Handling: " + c + ". \n")
-        #print(url)
+            CIK = companies[c][2]
 
-        soup = make_soup(url)
+            url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=" + str(
+                CIK) + "&type=10-K&dateb=&owner=exclude&count=40"
 
-        for table in soup.findAll('table'):
-            allrows = []
-            # print(table)
-            for row in table.findAll('tr'):
-                rowdata = []
-                for column in row.findAll('td'):
-                    if len(column.findAll('a', href=True)) != 0:
-                        rowdata.append("https://www.sec.gov/" + column.findAll('a', href=True)[0]['href'])
-                    else:
-                        rowdata.append(column.text)
-                    # print(column.text)
-                allrows.append(rowdata)
+            print("Handling: " + c + ". \n")
+            #print(url)
 
-            for i in allrows:
-                try:
-                    if i[0] == '10-K':
-                        if int(i[3][0:4]) >= startyear:
-                            # print(i[1],i[3][0:4])
+            soup = make_soup(url)
 
-                            minisoup = make_soup(i[1])
+            for table in soup.findAll('table'):
+                allrows = []
+                # print(table)
+                for row in table.findAll('tr'):
+                    rowdata = []
+                    for column in row.findAll('td'):
+                        if len(column.findAll('a', href=True)) != 0:
+                            rowdata.append("https://www.sec.gov/" + column.findAll('a', href=True)[0]['href'])
+                        else:
+                            rowdata.append(column.text)
+                        # print(column.text)
+                    allrows.append(rowdata)
 
-                            # print("level 2")
+                for i in allrows:
+                    try:
+                        if i[0] == '10-K':
+                            year=int(i[3][0:4])
+                            if year >= startyear and year <=endyear:
+                                # print(i[1],i[3][0:4])
 
-                            for table in minisoup.findAll('table'):
-                                allrows = []
-                                # print(table)
-                                for row in table.findAll('tr'):
-                                    if "10-K" in row.text:
-                                        # print("https://www.sec.gov/" + row.findAll('a', href=True)[0]["href"])
-                                        newlink="https://www.sec.gov/" + row.findAll('a', href=True)[0]["href"]
+                                minisoup = make_soup(i[1])
 
-                                        #print(c, int(i[3][0:4]) - 1,newlink)
+                                # print("level 2")
 
-                                        if newlink not in processed_links[c]:
-                                            queue.append((c, newlink,int(i[3][0:4]) - 1))
-                                            processed_links[c].append(newlink)
-                                            if newlinks == 0:
-                                                newlinks = 1
+                                for table in minisoup.findAll('table'):
+                                    allrows = []
+                                    # print(table)
+                                    for row in table.findAll('tr'):
+                                        if "10-K" in row.text:
+                                            # print("https://www.sec.gov/" + row.findAll('a', href=True)[0]["href"])
+                                            newlink="https://www.sec.gov/" + row.findAll('a', href=True)[0]["href"]
+
+                                            #print(c, int(i[3][0:4]) - 1,newlink)
+
+                                            if newlink not in processed_links[c]:
+                                                queue.append((c, newlink,int(i[3][0:4]) - 1))
+                                                processed_links[c].append(newlink)
+                                                if newlinks == 0:
+                                                    newlinks = 1
 
 
-                except IndexError:
-                    continue
+                    except IndexError:
+                        continue
+
 
     if newlinks==1:
         #print(queue)
@@ -161,3 +158,6 @@ def main():
 
     else:
         raise Exception("Something went wrong, no data found or data already initialized")
+
+if __name__ == "__main__":
+    main()

@@ -1,6 +1,6 @@
 # edgar_scraping
 
-<p>This project is designed to gelp people extract cashflow statements, balance sheets and income statement from 10-K/Qs the SEC Edgar Database.</p>
+<p>This project is designed to gelp people extract cashflow statements, balance sheets and income statement from 10-Ks the SEC Edgar Database.</p>
 
 ```diff
 - WIP, options have not been integrated yet
@@ -8,7 +8,6 @@
 
 <p><strong>Options:</strong>
 
-- HTML or CSV format
 
 - Continious "monitoring" mode vs one-time request
 
