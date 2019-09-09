@@ -81,17 +81,16 @@ def main_menu():
 
             for i in input_tickers:
                 if i not in SP500:
-                    print(str(i)+"Is not a SP500 company ticker, it will be skipped")
+                    print(str(i)+"Is not a SP500 company ticker, it will be skipped.\n")
                     input_tickers.remove(i)
 
-            print("Please select the startyear for datacollection. \n")
-            input_startyear = input("Please insert the startyear: ")
+            input_startyear = input("Please insert the startyear (must be >= 2000): ")
             print("\n")
 
             input_endyear = datetime.datetime.now().year
             print("\n\n")
 
-
+            data_request(input_startyear, input_endyear, input_tickers)
 
             update_mode(input_tickers)
 
@@ -102,14 +101,16 @@ def main_menu():
             input_tickers = input("Please enter the ticker or tickers of the respective companies (seperate them with a comma): \n")
             for i in input_tickers:
                 if i not in SP500:
-                    print(str(i)+"Is not a SP500 company ticker, it will be skipped")
+                    print(str(i)+"Is not a SP500 company ticker, it will be skipped.\n")
                     input_tickers.remove(i)
 
             print("Please select the timeframe for which you would like to extract the data. \n")
-            input_startyear = input("Please insert the startyear: ")
+            input_startyear = input("Please insert the startyear (must be >= 2000): ")
             print("\n")
             input_endyear = input("Please insert the endyear: ")
             print("\n\n")
+
+            data_request(input_startyear, input_endyear, input_tickers)
 
 
 
@@ -140,9 +141,6 @@ def update_mode(input_tickers):
 
     for q in queue:
         print(q)
-
-
-
         try:
             issue_log.append("Log of" + str(q))
             #ticker, url and date
@@ -163,12 +161,11 @@ def update_mode(input_tickers):
 
 
 
-#ToDo does not have the year
 
 def data_request(start_year,endyear,tickers):
-    import find_data as ini
+    import find_data
     import soup
-    queue=ini.main(start_year,endyear,tickers)
+    queue=find_data.main(start_year,endyear,tickers)
     issue_log=[]
     for q in queue:
 
