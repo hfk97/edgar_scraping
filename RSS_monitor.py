@@ -49,7 +49,7 @@ update_frame=60
 
 queue=[]
 
-def check_new10Ks():
+def check_new10Ks(request_tickers):
     global queue
     queue=[]
     try:
@@ -61,7 +61,7 @@ def check_new10Ks():
 
         except FileNotFoundError:
             processed_links={}
-            for i in companies:
+            for i in request_tickers:
                 processed_links[i]=[]
 
 
@@ -69,9 +69,9 @@ def check_new10Ks():
 
     newlinks=0
 
-    for i in companies:
+    for i in request_tickers:
 
-        NewsFeed = feedparser.parse("https://sec.report/CIK/"+str(companies[i][2])+".rss")
+        NewsFeed = feedparser.parse("https://sec.report/CIK/"+str(request_tickers[i][2])+".rss")
 
         for j in NewsFeed.entries:
             if "10-K" in j.title:
@@ -92,11 +92,13 @@ def check_new10Ks():
     else:
         print("no new 10Ks")
 
-    return s.enter(update_frame, 1, check_new10Ks, ())
+    return s.enter(update_frame, 1, check_new10Ks, argument=request_tickers)
 
 
-def main():
-    s.enter(1, 1, check_new10Ks, ())
+def main(request_tickers):
+    for i in request_tickers:
+        i=companies[i]
+    s.enter(1, 1, check_new10Ks, argument=request_tickers)
     s.run()
     return queue
 
