@@ -77,14 +77,20 @@ def main_menu():
 
 
         elif choice == 1:
-            input_tickers = input("Please enter the ticker or tickers of the respective companies (seperate them with a comma): \n")
+            input_tickers=[]
+            input_tickers.append(input(
+                "Please enter the ticker or tickers of the respective companies (seperate them with a comma): \n"))
 
             for i in input_tickers:
                 if i not in SP500:
-                    print(str(i)+"Is not a SP500 company ticker, it will be skipped.\n")
+                    print(str(i) + " is not a SP500 company ticker, it will be skipped.\n")
                     input_tickers.remove(i)
 
-            input_startyear = input("Please insert the startyear (must be >= 2000): ")
+            if len(input_tickers)==0:
+                print("No valid tickers have been chosen.")
+                break
+
+            input_startyear = int(input("Please insert the startyear (must be >= 2008): "))
             print("\n")
 
             input_endyear = datetime.datetime.now().year
@@ -98,19 +104,26 @@ def main_menu():
 
 
         elif choice == 2:
-            input_tickers = input("Please enter the ticker or tickers of the respective companies (seperate them with a comma): \n")
+            input_tickers=[]
+            input_tickers.append(input(
+                "Please enter the ticker or tickers of the respective companies (seperate them with a comma): \n"))
+
             for i in input_tickers:
                 if i not in SP500:
-                    print(str(i)+"Is not a SP500 company ticker, it will be skipped.\n")
+                    print(str(i) + " is not a SP500 company ticker, it will be skipped.\n")
                     input_tickers.remove(i)
 
+            if len(input_tickers)==0:
+                print("No valid tickers have been chosen.")
+                break
+
             print("Please select the timeframe for which you would like to extract the data. \n")
-            input_startyear = input("Please insert the startyear (must be >= 2000): ")
+            input_startyear = int(input("Please insert the startyear (must be >= 2008): "))
             print("\n")
-            input_endyear = input("Please insert the endyear: ")
+            input_endyear = int(input("Please insert the endyear: "))
             print("\n\n")
 
-            data_request(input_startyear, input_endyear, input_tickers)
+            data_request(input_startyear,input_endyear,input_tickers)
 
 
 
@@ -145,7 +158,6 @@ def update_mode(input_tickers):
             issue_log.append("Log of" + str(q))
             #ticker, url and date
             soup.make_soup(q[0],q[1],q[2])
-            issue_log.append("done")
 
         except UnboundLocalError as e:
             print(e)
@@ -162,11 +174,12 @@ def update_mode(input_tickers):
 
 
 
-def data_request(start_year,endyear,tickers):
+def data_request(start_year,end_year,tickers):
     import find_data
     import soup
-    queue=find_data.main(start_year,endyear,tickers)
+    queue=find_data.main(start_year,end_year,tickers)
     issue_log=[]
+    print(queue)
     for q in queue:
 
         try:
@@ -179,13 +192,13 @@ def data_request(start_year,endyear,tickers):
             print(e)
             print(q[1]+"\n")
             issue_log.append(str(e)+q[1]+"\n")
-            print(issue_log)
 
         except AssertionError as e:
             print(e)
             print(q[1]+"\n")
             issue_log.append(str(e)+q[1]+"\n")
-            print(issue_log)
+
+    print(issue_log)
 
 
 

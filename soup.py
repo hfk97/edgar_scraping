@@ -41,7 +41,7 @@ def make_soup(ticker,url,date):
         page = urllib.request.urlopen(req)  # conntect to website
 
     except:
-        print("An error occured.")
+        print("An error occured with the data request to SEC databank, check your internet connection.")
 
     soup = BeautifulSoup(page, 'html.parser')
     parse10k(ticker,soup,date)
@@ -100,8 +100,8 @@ def gettables(soup):
 def parse10k(ticker,soup, date):
     tables = gettables(soup)
 
-    processing_log=[]
-    processing_log.append("Log of" + str(soup.filename))
+    processing_log=""
+    processing_log+="Log of " + ticker + str(date) +"\n"
 
     tcas = re.compile("total\scurrent\sassets")
     tcls = re.compile("total\scurrent\sliabilities")
@@ -138,7 +138,7 @@ def parse10k(ticker,soup, date):
                                                            columns=[int(date), int(date) - 1])
                     balance_found = True
                 except AssertionError as e:
-                    processing_log.append("balance_sheet_ASSERTION_ERROR" + str(e) + "\n")
+                    processing_log+="balance_sheet_ASSERTION_ERROR" + str(e) + "\n"
                     pass
 
         if not inc_found:
@@ -152,7 +152,7 @@ def parse10k(ticker,soup, date):
                     operation_statement = operation_statement.iloc[1:]
                     inc_found = True
                 except AssertionError as e:
-                    processing_log.append("operation_statement_ASSERTION_ERROR"+str(e)+"\n")
+                    processing_log+="operation_statement_ASSERTION_ERROR"+str(e)+"\n"
                     pass
 
         if not cash_found:
@@ -165,10 +165,11 @@ def parse10k(ticker,soup, date):
                     cash_flow_statement = cash_flow_statement.iloc[1:]
                     cash_found = True
                 except AssertionError as e:
-                    processing_log.append("cash_flow_statement_ASSERTION_ERROR"+str(e)+"\n")
+                    processing_log+="cash_flow_statement_ASSERTION_ERROR"+str(e)+"\n"
                     pass
 
-    print(processing_log)
+    #print(processing_log)
+    del processing_log
     export_to_csv(ticker, date, balance_sheet, operation_statement, cash_flow_statement)
 
 
@@ -181,13 +182,12 @@ def export_to_csv(ticker,year,balance,operation,cash):
         os.makedirs("EdgarData")
     if not os.path.exists("./EdgarData/"+ticker):
         os.makedirs("./EdgarData/"+ticker)
-    if not os.path.exists("./EdgarData/"+ticker+"/"+year):
-        os.makedirs("./EdgarData/" + ticker + "/" + year)
+    if not os.path.exists("./EdgarData/"+ticker+"/"+str(year)):
+        os.makedirs("./EdgarData/" + ticker + "/" + str(year))
 
-        balance.to_csv (r"./EdgarData/" + ticker + "/" + year + "/" + ticker+year+"Balance_Sheet.csv")
-        operation.to_csv(r"./EdgarData/" + ticker + "/" + year + "/" + ticker + year + "Operation_Statement.csv")
-        cash.to_csv(r"./EdgarData/" + ticker + "/" + year + "/" + ticker + year + "Cashflow_statement.csv")
-        print("saved\n")
+        balance.to_csv (r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker+str(year)+"Balance_Sheet.csv")
+        operation.to_csv(r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year) + "Operation_Statement.csv")
+        cash.to_csv(r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year) + "Cashflow_statement.csv")
 
     else:
         print("This data already exists")
@@ -216,37 +216,37 @@ def export_to_csv(ticker,year,balance,operation,cash):
 #https://www.sec.gov//Archives/edgar/data/1045810/000104581011000015/fy2011form10k.htm
 
 
-sys.exit()
+#sys.exit()
 
 
 
 
 
-soup=make_soup("https://www.sec.gov/Archives/edgar/data/1652044/000165204419000004/goog10-kq42018.htm#s60D13494C77354D8AED0E72D61E53B98")
+#soup=make_soup("https://www.sec.gov/Archives/edgar/data/1652044/000165204419000004/goog10-kq42018.htm#s60D13494C77354D8AED0E72D61E53B98")
 
-filing,spec=identify(soup.filename.text.split("\n", 1)[0])
+#filing,spec=identify(soup.filename.text.split("\n", 1)[0])
 
-ticker='Goog'
+#ticker='Goog'
 
-if filing=='10k':
-    s=soup.filename.text.split("\n", 1)[0]
-    for i, n in enumerate(s):
-        if n=="2" and s[i+1]=="0":
-            year = s[i:i + 4]
-            break
+#if filing=='10k':
+#    s=soup.filename.text.split("\n", 1)[0]
+#    for i, n in enumerate(s):
+#        if n=="2" and s[i+1]=="0":
+#            year = s[i:i + 4]
+#            break
 
-try:
-    balance_sheet, operation_statement, cash_flow_statement = parse10k(soup, year)
+#try:
+#    balance_sheet, operation_statement, cash_flow_statement = parse10k(soup, year)
 
-except UnboundLocalError as e:
-    print(e)
-    print("here")
+#except UnboundLocalError as e:
+#    print(e)
+#    print("here")
 
 
 
 
 #Provision for taxes
-inctax = re.compile("(\D*\s?(for)?income\stax{1}(es)?\s?\D*)||(Provision for taxes)")
+#inctax = re.compile("(\D*\s?(for)?income\stax{1}(es)?\s?\D*)||(Provision for taxes)")
 
 
-export_to_csv(ticker,year,balance_sheet,operation_statement,cash_flow_statement)
+#export_to_csv(ticker,year,balance_sheet,operation_statement,cash_flow_statement)

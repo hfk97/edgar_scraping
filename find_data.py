@@ -159,5 +159,5 @@ def main(startyear=2015,endyear=2018,tickers=None):
     else:
         raise Exception("Something went wrong, no data found or data already initialized")
 
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()
