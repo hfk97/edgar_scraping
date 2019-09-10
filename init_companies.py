@@ -66,7 +66,6 @@ def initialize_companies():
         Companies[i] = [i, name, CIK]
         print(i, name, CIK)
 
-    #save_obj(Companies, "sample_companies")
     save_obj(Companies, "companies")
 
     return

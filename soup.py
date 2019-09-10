@@ -107,14 +107,14 @@ def parse10k(ticker,soup, date):
     tcls = re.compile("total\scurrent\sliabilities")
     tas = re.compile("total\sassets")
 
-    rev = re.compile("\w*\s?revenue[s]?")
+    rev = re.compile("\w*\s?revenue[s]?||Net Sales")
     ninc = re.compile("net?\s?(\(loss\))?\s?income\s?(\(loss\))?")
     #inctax = re.compile("\D*income\stax\s\D*")
     inctax = re.compile("(\D*\s?(for)?income\stax{1}(es)?\s?\D*)||(Provision for taxes)")
 
-    ncpoa = re.compile("net\scash\s\D+\soperating\sactivities$")
-    ncpia = re.compile("net\scash\s\D+\sinvesting\sactivities$")
-    ncpfa = re.compile("net\scash\s\D+\sfinancing\sactivities$")
+    ncpoa = re.compile("(net\s)?cash\s\D+\soperating\sactivities$")
+    ncpia = re.compile("(net\s)?cash\s\D+\sinvesting\sactivities$")
+    ncpfa = re.compile("(net\s)?cash\s\D+\sfinancing\sactivities$")
 
 
     balance_patterns = [tcas, tcls, tas]
@@ -197,58 +197,11 @@ def export_to_csv(ticker,year,balance,operation,cash):
 
 
 
-
-
-
-
-
-
-
-
-
-
-#Todo fix issues from terminal
-
-#ToDo dynamic SP500 list
-
-
-#ToDo: 10ks
-#soup = make_soup("https://www.sec.gov/Archives/edgar/data/2488/000000248819000011/amd-12292018x10k.htm")
-#soup=make_soup("https://www.sec.gov/Archives/edgar/data/1652044/000165204419000004/goog10-kq42018.htm#s60D13494C77354D8AED0E72D61E53B98")
+#10ks
+#https://www.sec.gov/Archives/edgar/data/2488/000000248819000011/amd-12292018x10k.htm
+#https://www.sec.gov/Archives/edgar/data/1652044/000165204419000004/goog10-kq42018.htm#s60D13494C77354D8AED0E72D61E53B98
 #https://www.sec.gov//Archives/edgar/data/1045810/000104581011000015/fy2011form10k.htm
 
 
-#sys.exit()
 
-
-
-
-
-#soup=make_soup("https://www.sec.gov/Archives/edgar/data/1652044/000165204419000004/goog10-kq42018.htm#s60D13494C77354D8AED0E72D61E53B98")
-
-#filing,spec=identify(soup.filename.text.split("\n", 1)[0])
-
-#ticker='Goog'
-
-#if filing=='10k':
-#    s=soup.filename.text.split("\n", 1)[0]
-#    for i, n in enumerate(s):
-#        if n=="2" and s[i+1]=="0":
-#            year = s[i:i + 4]
-#            break
-
-#try:
-#    balance_sheet, operation_statement, cash_flow_statement = parse10k(soup, year)
-
-#except UnboundLocalError as e:
-#    print(e)
-#    print("here")
-
-
-
-
-#Provision for taxes
-#inctax = re.compile("(\D*\s?(for)?income\stax{1}(es)?\s?\D*)||(Provision for taxes)")
-
-
-#export_to_csv(ticker,year,balance_sheet,operation_statement,cash_flow_statement)
+#make_soup("AMAT","https://www.sec.gov//Archives/edgar/data/6951/000000695116000068/amat10302016-10k.htm#sA39551AE2B055A83BF22C4A6C722F33F","2016")

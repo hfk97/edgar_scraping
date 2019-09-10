@@ -90,7 +90,7 @@ def main_menu():
 
             if len(input_tickers) == 0:
                 print("No valid tickers have been chosen.")
-                break
+                continue
 
             input_startyear = int(input("Please insert the startyear (must be >= 2008): "))
             print("\n")
@@ -118,7 +118,7 @@ def main_menu():
 
             if len(input_tickers)==0:
                 print("No valid tickers have been chosen.")
-                break
+                continue
 
             print("Please select the timeframe for which you would like to extract the data. \n")
             input_startyear = int(input("Please insert the startyear (must be >= 2008): "))
@@ -153,10 +153,10 @@ def update_mode(input_tickers):
             soup.make_soup(q[0],q[1],q[2])
 
         except UnboundLocalError as e:
-            issue_log.append(str(e) + q[1] + "\n")
+            issue_log.append(str(e) + "\n")
 
         except AssertionError as e:
-            issue_log.append(str(e) + q[1] + "\n")
+            issue_log.append(str(e) + "\n")
 
     print(issue_log)
 
@@ -167,8 +167,12 @@ def data_request(start_year,end_year,tickers):
     import find_data
     import soup
     queue=find_data.main(start_year,end_year,tickers)
+    if queue==None:
+        return
     issue_log=[]
-    print(queue)
+    print("Queue: ")
+    for i in queue:
+        print(str(i)+"\n")
     for q in queue:
 
         try:
@@ -178,10 +182,10 @@ def data_request(start_year,end_year,tickers):
             issue_log.append("Tables found")
 
         except UnboundLocalError as e:
-            issue_log.append(str(e)+q[1]+"\n")
+            issue_log.append(str(e)+"\n")
 
         except AssertionError as e:
-            issue_log.append(str(e)+q[1]+"\n")
+            issue_log.append(str(e)+"\n")
 
     print(issue_log)
 

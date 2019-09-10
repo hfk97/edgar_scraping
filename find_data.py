@@ -68,13 +68,13 @@ def main(startyear=2015,endyear=2018,tickers=None):
         companies
     except NameError:
         try:
-            companies = load_obj("sample_companies")
-            # companies=load_obj("companies")
+            #companies = load_obj("sample_companies")
+            companies=load_obj("companies")
 
         except FileNotFoundError:
             import init_companies
-            companies = load_obj("sample_companies")
-            # companies=load_obj("companies")
+            #companies = load_obj("sample_companies")
+            companies=load_obj("companies")
 
     global queue
     queue=[]
@@ -92,16 +92,16 @@ def main(startyear=2015,endyear=2018,tickers=None):
 
     newlinks=0
 
-    for c in companies:
+    for t in tickers:
 
-        if (tickers != None and c in tickers) or tickers==None:
+        if t in companies.keys():
 
-            CIK = companies[c][2]
+            CIK = companies[t][2]
 
             url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=" + str(
                 CIK) + "&type=10-K&dateb=&owner=exclude&count=40"
 
-            print("Handling: " + c + ". \n")
+            print("Handling: " + t + ". \n")
             #print(url)
 
             soup = make_soup(url)
@@ -140,9 +140,9 @@ def main(startyear=2015,endyear=2018,tickers=None):
 
                                             #print(c, int(i[3][0:4]) - 1,newlink)
 
-                                            if newlink not in processed_links[c]:
-                                                queue.append((c, newlink,int(i[3][0:4]) - 1))
-                                                processed_links[c].append(newlink)
+                                            if newlink not in processed_links[t]:
+                                                queue.append((t, newlink,int(i[3][0:4]) - 1))
+                                                processed_links[t].append(newlink)
                                                 if newlinks == 0:
                                                     newlinks = 1
 
@@ -152,12 +152,15 @@ def main(startyear=2015,endyear=2018,tickers=None):
 
 
     if newlinks==1:
-        #print(queue)
         save_obj(processed_links, "processed_links")
+        #print("Queue: ")
+        #for i in queue:
+        #    print(str(i) + "\n")
         return queue
 
     else:
-        raise Exception("Something went wrong, no data found or data already initialized")
+        print("Something went wrong no new data was found or data already initialized")
+        return None
 
-#if __name__ == "__main__":
-#    main()
+if __name__ == "__main__":
+    main(2008,2014,["INTC","AMD","AMAT"])
