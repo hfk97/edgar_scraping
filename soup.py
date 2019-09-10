@@ -189,6 +189,8 @@ def export_to_csv(ticker,year,balance,operation,cash):
         operation.to_csv(r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year) + "Operation_Statement.csv")
         cash.to_csv(r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year) + "Cashflow_statement.csv")
 
+        print("Successfull extraction - "+ticker+str(year))
+
     else:
         print("This data already exists")
 

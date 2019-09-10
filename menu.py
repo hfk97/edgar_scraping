@@ -64,7 +64,7 @@ def main_menu():
     while True:
         try:
             choice = int(input(
-                "Please choose an option:\n(1) Initialize continous monitoring.  \n(2) One-time request. \n(3) Run program with a sample. \n(0) End \n"))
+                "Please choose an option:\n(1) Initialize continous monitoring.  \n(2) One-time request. \n(0) End \n"))
         except ValueError:
             print("Invalid selection.")
             continue
@@ -77,16 +77,18 @@ def main_menu():
 
 
         elif choice == 1:
-            input_tickers=[]
-            input_tickers.append(input(
-                "Please enter the ticker or tickers of the respective companies (seperate them with a comma): \n"))
+            input_tickers = []
+            for ticker in input(
+                    "Please enter the ticker or tickers of the respective companies (seperate them with a comma): \n").split(
+                ','):
+                input_tickers.append(ticker)
 
             for i in input_tickers:
                 if i not in SP500:
                     print(str(i) + " is not a SP500 company ticker, it will be skipped.\n")
                     input_tickers.remove(i)
 
-            if len(input_tickers)==0:
+            if len(input_tickers) == 0:
                 print("No valid tickers have been chosen.")
                 break
 
@@ -105,8 +107,9 @@ def main_menu():
 
         elif choice == 2:
             input_tickers=[]
-            input_tickers.append(input(
-                "Please enter the ticker or tickers of the respective companies (seperate them with a comma): \n"))
+            for ticker in input(
+                "Please enter the ticker or tickers of the respective companies (seperate them with a comma): \n").split(','):
+                input_tickers.append(ticker)
 
             for i in input_tickers:
                 if i not in SP500:
@@ -124,16 +127,6 @@ def main_menu():
             print("\n\n")
 
             data_request(input_startyear,input_endyear,input_tickers)
-
-
-
-
-
-
-        elif choice == 3:
-            #Todo
-            print("Hey")
-
 
 
         else:
@@ -160,16 +153,12 @@ def update_mode(input_tickers):
             soup.make_soup(q[0],q[1],q[2])
 
         except UnboundLocalError as e:
-            print(e)
-            print(q[1] + "\n")
             issue_log.append(str(e) + q[1] + "\n")
-            print(issue_log)
 
         except AssertionError as e:
-            print(e)
-            print(q[1] + "\n")
             issue_log.append(str(e) + q[1] + "\n")
-            print(issue_log)
+
+    print(issue_log)
 
 
 
@@ -189,13 +178,9 @@ def data_request(start_year,end_year,tickers):
             issue_log.append("Tables found")
 
         except UnboundLocalError as e:
-            print(e)
-            print(q[1]+"\n")
             issue_log.append(str(e)+q[1]+"\n")
 
         except AssertionError as e:
-            print(e)
-            print(q[1]+"\n")
             issue_log.append(str(e)+q[1]+"\n")
 
     print(issue_log)
