@@ -202,6 +202,4 @@ def export_to_csv(ticker,year,balance,operation,cash):
 #https://www.sec.gov/Archives/edgar/data/1652044/000165204419000004/goog10-kq42018.htm#s60D13494C77354D8AED0E72D61E53B98
 #https://www.sec.gov//Archives/edgar/data/1045810/000104581011000015/fy2011form10k.htm
 
-
-
-#make_soup("AMAT","https://www.sec.gov//Archives/edgar/data/6951/000000695116000068/amat10302016-10k.htm#sA39551AE2B055A83BF22C4A6C722F33F","2016")
+make_soup("AMAT","https://www.sec.gov//Archives/edgar/data/6951/000000695116000068/amat10302016-10k.htm#sA39551AE2B055A83BF22C4A6C722F33F","2016")

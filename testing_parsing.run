@@ -1,7 +1,0 @@
-rm processed_links.pkl
-
-clear
-
-clear
-
-python soup.py

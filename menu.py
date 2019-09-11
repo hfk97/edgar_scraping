@@ -139,7 +139,7 @@ def main_menu():
 
 def update_mode(input_tickers):
     import RSS_monitor
-    import soup
+    import processing
     issue_log=[]
     queue=RSS_monitor.main(input_tickers)
 
@@ -150,7 +150,7 @@ def update_mode(input_tickers):
         try:
             issue_log.append("Log of" + str(q))
             #ticker, url and date
-            soup.make_soup(q[0],q[1],q[2])
+            processing.make_soup(q[0], q[1], q[2])
 
         except UnboundLocalError as e:
             issue_log.append(str(e) + "\n")
@@ -165,7 +165,7 @@ def update_mode(input_tickers):
 
 def data_request(start_year,end_year,tickers):
     import find_data
-    import soup
+    import processing
     queue=find_data.main(start_year,end_year,tickers)
     if queue==None:
         return
@@ -178,7 +178,7 @@ def data_request(start_year,end_year,tickers):
         try:
             issue_log.append("Log of"+ str(q))
             #ticker, url and date
-            soup.make_soup(q[0],q[1],q[2])
+            processing.make_soup(q[0], q[1], q[2])
             issue_log.append("Tables found")
 
         except UnboundLocalError as e:
