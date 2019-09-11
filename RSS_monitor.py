@@ -50,6 +50,8 @@ update_frame=60
 queue=[]
 
 def check_new10Ks(request_tickers):
+
+
     global queue
     queue=[]
     try:
@@ -71,14 +73,14 @@ def check_new10Ks(request_tickers):
 
     for i in request_tickers:
 
-        NewsFeed = feedparser.parse("https://sec.report/CIK/"+str(request_tickers[i][2])+".rss")
+        NewsFeed = feedparser.parse("https://sec.report/CIK/"+str(i[2])+".rss")
 
         for j in NewsFeed.entries:
             if "10-K" in j.title:
-                #print(j.links[0].href)
-                if j.links[0].href not in processed_links[i]:
-                    queue.append((i,j.links[0].href,(datetime.datetime.now().year)-1))
-                    processed_links[i].append(j.links[0].href)
+                #print(j.links[0].href,type(j.links[0].href))
+                if j.links[0].href not in processed_links[i[0]]:
+                    queue.append((i[0],j.links[0].href,(datetime.datetime.now().year)-1))
+                    processed_links[i[0]].append(j.links[0].href)
                     if newlinks==0:
                         newlinks=1
 
@@ -92,13 +94,13 @@ def check_new10Ks(request_tickers):
     else:
         print("no new 10Ks")
 
-    return s.enter(update_frame, 1, check_new10Ks, argument=request_tickers)
+    return s.enter(update_frame, 1, check_new10Ks, argument=[request_tickers])
 
 
 def main(request_tickers):
-    for i in request_tickers:
-        i=companies[i]
-    s.enter(1, 1, check_new10Ks, argument=request_tickers)
+    for n,i in enumerate(request_tickers):
+        request_tickers[n]=companies[i]
+    s.enter(1, 1, check_new10Ks, argument=[request_tickers])
     s.run()
     return queue
 
