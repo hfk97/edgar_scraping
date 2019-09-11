@@ -44,7 +44,7 @@ def make_soup(ticker,url,date):
 
     soup = BeautifulSoup(page, 'html.parser')
 
-    return parse10k(ticker,soup,date)
+    return parse10k(ticker,soup,date,url)
 
 
 def gettables(soup):
@@ -96,7 +96,7 @@ def gettables(soup):
 
 
 
-def parse10k(ticker,soup, date):
+def parse10k(ticker,soup, date,url):
     tables = gettables(soup)
 
     processing_log=""
@@ -106,9 +106,9 @@ def parse10k(ticker,soup, date):
     tcls = re.compile("total\scurrent\sliabilities")
     tas = re.compile("total\sassets")
 
-    rev = re.compile("\w*\s?revenue[s]?||Net Sales")
-    ninc = re.compile("net?\s?(\(loss\))?\s?income\s?(\(loss\))?")
-    inctax = re.compile("(\D*\s?(for)?income\stax{1}(es)?\s?\D*)||(Provision for taxes)")
+    rev = re.compile("\w*\s?revenue[s]?|| Net Sales")
+    ninc = re.compile("net?\s?(\(loss\))?\s?((loss)|(income))\s?(\(loss\))?")
+    inctax = re.compile("(\D*\s?(for)?income\stax{1}(es)?\s?\D*)||(Provision for\s(income\s)?taxes)")
 
     ncpoa = re.compile("(net\s)?cash\s\D+\soperating\sactivities$")
     ncpia = re.compile("(net\s)?cash\s\D+\sinvesting\sactivities$")
@@ -170,13 +170,29 @@ def parse10k(ticker,soup, date):
 
     #print(processing_log)
     del processing_log
-    return export_to_csv(ticker, date, balance_sheet, operation_statement, cash_flow_statement)
+    try:
+        return export_to_csv(ticker, date, balance_sheet, operation_statement, cash_flow_statement,url)
+
+    except UnboundLocalError as e:
+        if not os.path.exists("./EdgarData"):
+            os.makedirs("EdgarData")
+        if not os.path.exists("./EdgarData/" + ticker):
+            os.makedirs("./EdgarData/" + ticker)
+        if not os.path.exists("./EdgarData/" + ticker + "/" + str(date)):
+            os.makedirs("./EdgarData/" + ticker + "/" + str(date))
+
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
+        req = Request(url, headers=headers)
+        page = urllib.request.urlopen(req)
+        filing = page.read()
+        with open("./EdgarData/" + ticker + "/" + str(date) + "/" + ticker + str(date) + "10k.html", 'w') as f:
+            f.write(filing.decode('utf-8'))
+
+        return "There was an issue during data extraction (UnboundLocalError: "+str(e)+ ") for "+ticker+str(date)+" the respective 10k was downloaded and saved for manual inspection. For reasons please consider the limitations in this projects Readme file.\n"
 
 
-
-
-
-def export_to_csv(ticker,year,balance,operation,cash):
+def export_to_csv(ticker,year,balance,operation,cash,url):
 
     if not os.path.exists("./EdgarData"):
         os.makedirs("EdgarData")
@@ -189,6 +205,18 @@ def export_to_csv(ticker,year,balance,operation,cash):
         operation.to_csv(r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year) + "Operation_Statement.csv")
         cash.to_csv(r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year) + "Cashflow_statement.csv")
 
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
+        req = Request(url, headers=headers)
+
+        page = urllib.request.urlopen(req)
+
+        filing=page.read()
+
+        with open("./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year)+"10k.html", 'w') as f:
+            f.write(filing.decode('utf-8'))
+
+
         return "Successfull extraction - "+ticker+str(year)
 
     else:
@@ -200,5 +228,3 @@ def export_to_csv(ticker,year,balance,operation,cash):
 #https://www.sec.gov/Archives/edgar/data/2488/000000248819000011/amd-12292018x10k.htm
 #https://www.sec.gov/Archives/edgar/data/1652044/000165204419000004/goog10-kq42018.htm#s60D13494C77354D8AED0E72D61E53B98
 #https://www.sec.gov//Archives/edgar/data/1045810/000104581011000015/fy2011form10k.htm
-
-a=make_soup("AMAT","https://www.sec.gov//Archives/edgar/data/6951/000095012309070205/f53510e10vk.htm","2008")
