@@ -1,13 +1,8 @@
 # edgar_scraping
 
-<p>This project is designed to gelp people extract cashflow statements, balance sheets and income statement of SP500 companies from their 10-Ks the SEC Edgar Database.</p>
-
-```diff
-- WIP, options have not been integrated yet
-```
+<p>This project is designed to help people extract cashflow statements, balance sheets and income statement of SP500 companies from their 10-Ks the SEC Edgar Database.</p>
 
 <p><strong>Options:</strong>
-
 
 - Continious "monitoring" mode vs one-time request
 
