@@ -9,11 +9,10 @@ import os
 def getpack(package):
     try:
         return (importlib.import_module(package))
-        # import package
     except ImportError:
         subprocess.call([sys.executable, "-m", "pip", "install", package])
         return (importlib.import_module(package))
-        # import package
+
 
 bs4=getpack("bs4")
 from bs4 import BeautifulSoup
@@ -38,13 +37,14 @@ def make_soup(ticker,url,date):
     req = Request(url, headers=headers)
 
     try:
-        page = urllib.request.urlopen(req)  # conntect to website
+        page = urllib.request.urlopen(req)  # connect to website
 
     except:
         print("An error occured with the data request to SEC databank, check your internet connection.")
 
     soup = BeautifulSoup(page, 'html.parser')
-    parse10k(ticker,soup,date)
+
+    return parse10k(ticker,soup,date)
 
 
 def gettables(soup):
@@ -67,7 +67,6 @@ def gettables(soup):
                 if pattern.match(rowdata[n]) is not None:
                     rowdata[n]=rowdata[n].replace('(','-')
 
-            #dropitems = ["\xa0", '','$',"\n"]
             dropitems = ['', '$',')']
 
 
@@ -109,7 +108,6 @@ def parse10k(ticker,soup, date):
 
     rev = re.compile("\w*\s?revenue[s]?||Net Sales")
     ninc = re.compile("net?\s?(\(loss\))?\s?income\s?(\(loss\))?")
-    #inctax = re.compile("\D*income\stax\s\D*")
     inctax = re.compile("(\D*\s?(for)?income\stax{1}(es)?\s?\D*)||(Provision for taxes)")
 
     ncpoa = re.compile("(net\s)?cash\s\D+\soperating\sactivities$")
@@ -118,10 +116,8 @@ def parse10k(ticker,soup, date):
 
 
     balance_patterns = [tcas, tcls, tas]
-
     income_patterns = [rev, ninc, inctax]
-
-    cash_flow_patterns = [ncpoa, ncpia, ncpfa]
+    cash_flow_patterns = [ninc, ncpoa, ncpia, ncpfa]
 
     inc_found = False
     balance_found = False
@@ -164,13 +160,17 @@ def parse10k(ticker,soup, date):
                                                                  columns=[int(date), int(date) - 1, int(date) - 2])
                     cash_flow_statement = cash_flow_statement.iloc[1:]
                     cash_found = True
+
+                    if "Fiscal Year" in cash_flow_statement.iloc[0].name:
+                        cash_flow_statement.drop("Fiscal Year", inplace=True)
+
                 except AssertionError as e:
                     processing_log+="cash_flow_statement_ASSERTION_ERROR"+str(e)+"\n"
                     pass
 
     #print(processing_log)
     del processing_log
-    export_to_csv(ticker, date, balance_sheet, operation_statement, cash_flow_statement)
+    return export_to_csv(ticker, date, balance_sheet, operation_statement, cash_flow_statement)
 
 
 
@@ -189,11 +189,10 @@ def export_to_csv(ticker,year,balance,operation,cash):
         operation.to_csv(r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year) + "Operation_Statement.csv")
         cash.to_csv(r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year) + "Cashflow_statement.csv")
 
-        print("Successfull extraction - "+ticker+str(year))
+        return "Successfull extraction - "+ticker+str(year)
 
     else:
-        print("This data already exists")
-
+        return "This data already exists"
 
 
 
@@ -202,4 +201,4 @@ def export_to_csv(ticker,year,balance,operation,cash):
 #https://www.sec.gov/Archives/edgar/data/1652044/000165204419000004/goog10-kq42018.htm#s60D13494C77354D8AED0E72D61E53B98
 #https://www.sec.gov//Archives/edgar/data/1045810/000104581011000015/fy2011form10k.htm
 
-make_soup("AMAT","https://www.sec.gov//Archives/edgar/data/6951/000000695116000068/amat10302016-10k.htm#sA39551AE2B055A83BF22C4A6C722F33F","2016")
+a=make_soup("AMAT","https://www.sec.gov//Archives/edgar/data/6951/000095012309070205/f53510e10vk.htm","2008")
