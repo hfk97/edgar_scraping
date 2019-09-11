@@ -96,7 +96,7 @@ def main_menu():
             print("\n")
 
             input_endyear = datetime.datetime.now().year
-            print("\n\n")
+            print("\n")
 
             data_request(input_startyear, input_endyear, input_tickers)
 
@@ -134,61 +134,67 @@ def main_menu():
 
 
 
-
-
-
-def update_mode(input_tickers):
-    import RSS_monitor
-    import processing
-    issue_log=[]
-    queue=RSS_monitor.main(input_tickers)
-
-
-
-    for q in queue:
-        print(q)
-        try:
-            issue_log.append("Log of" + str(q))
-            #ticker, url and date
-            processing.make_soup(q[0], q[1], q[2])
-
-        except UnboundLocalError as e:
-            issue_log.append(str(e) + "\n")
-
-        except AssertionError as e:
-            issue_log.append(str(e) + "\n")
-
-    print(issue_log)
-
-
-
-
 def data_request(start_year,end_year,tickers):
     import find_data
     import processing
     queue=find_data.main(start_year,end_year,tickers)
     if queue==None:
         return
-    issue_log=[]
-    print("Queue: ")
-    for i in queue:
-        print(str(i)+"\n")
-    for q in queue:
+    processing_log=[]
 
+    for q in queue:
+        processing_log_entry=""
         try:
-            issue_log.append("Log of"+ str(q))
+            processing_log_entry+="Log of"+ str(q) +" "
             #ticker, url and date
-            processing.make_soup(q[0], q[1], q[2])
-            issue_log.append("Tables found")
+            processing_log_entry+=processing.make_soup(q[0], q[1], q[2])
 
         except UnboundLocalError as e:
-            issue_log.append(str(e)+"\n")
+            processing_log_entry+=str(e)
 
         except AssertionError as e:
-            issue_log.append(str(e)+"\n")
+            processing_log_entry+=str(e)
 
-    print(issue_log)
+        processing_log.append(processing_log_entry)
 
+    for i in processing_log:
+        print(i)
+
+
+
+
+
+def update_mode(input_tickers):
+    import RSS_monitor
+    import processing
+
+    processing_log = []
+
+    queue = RSS_monitor.main(input_tickers)
+    if queue == None:
+        return
+
+    print("Queue: ")
+    for i in queue:
+        print(str(i) + "\n")
+
+    for q in queue:
+        processing_log_entry = ""
+        try:
+            processing_log_entry += "Log of" + str(q) + " "
+            # ticker, url and date
+            processing_log_entry += processing.make_soup(q[0], q[1], q[2])
+
+        except UnboundLocalError as e:
+            processing_log_entry += str(e)
+
+        except AssertionError as e:
+            processing_log_entry += str(e)
+
+        processing_log.append(processing_log_entry)
+
+    for i in processing_log:
+        print(i)
 
 
 
