@@ -15,7 +15,7 @@ def getpack(package):
         # import package
 
 datetime=getpack("datetime")
-
+time=getpack("time")
 
 
 def main_menu():
@@ -98,9 +98,12 @@ def main_menu():
             input_endyear = datetime.datetime.now().year
             print("\n")
 
+            update_intervall = int(input("Please Select an update intervall (in seconds): "))
+            print("\n")
+
             data_request(input_startyear, input_endyear, input_tickers)
 
-            update_mode(input_tickers)
+            update_mode(input_tickers,update_intervall)
 
 
 
@@ -164,37 +167,49 @@ def data_request(start_year,end_year,tickers):
 
 
 
-def update_mode(input_tickers):
+def update_mode(input_tickers,update_intervall):
     import RSS_monitor
     import processing
 
     processing_log = []
 
-    queue = RSS_monitor.main(input_tickers)
-    if queue == None:
-        return
-
-    print("Queue: ")
-    for i in queue:
-        print(str(i) + "\n")
-
-    for q in queue:
-        processing_log_entry = ""
+        # hier loop
+    while True:
         try:
-            processing_log_entry += "Log of" + str(q) + " "
-            # ticker, url and date
-            processing_log_entry += processing.make_soup(q[0], q[1], q[2])
+            queue = RSS_monitor.main(input_tickers)
 
-        except UnboundLocalError as e:
-            processing_log_entry += str(e)
+            if queue != None:
+                print("Queue: ")
+                for i in queue:
+                    print(str(i) + "\n")
 
-        except AssertionError as e:
-            processing_log_entry += str(e)
+                for q in queue:
+                    processing_log_entry = ""
+                    try:
+                        processing_log_entry += "Log of" + str(q) + " "
+                        # ticker, url and date
+                        processing_log_entry += processing.make_soup(q[0], q[1], q[2])
 
-        processing_log.append(processing_log_entry)
+                    except UnboundLocalError as e:
+                        processing_log_entry += str(e)
 
-    for i in processing_log:
-        print(i)
+                    except AssertionError as e:
+                        processing_log_entry += str(e)
+
+                    processing_log.append(processing_log_entry)
+
+                for i in processing_log:
+                    print(i)
+
+            print("asleep")
+            time.sleep(update_intervall)
+            print("awake")
+
+        except KeyboardInterrupt:
+            print("Monitoring ended \n")
+            break
+
+    return
 
 
 
