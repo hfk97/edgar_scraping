@@ -1,7 +1,6 @@
 import subprocess
 import sys
 import importlib
-import sched,time
 import datetime
 now = datetime.datetime.now()
 
@@ -44,15 +43,8 @@ except NameError:
         #companies=load_obj("companies")
 
 
-s = sched.scheduler(time.time, time.sleep)
-update_frame=60
-
-queue=[]
-
 def check_new10Ks(request_tickers):
 
-
-    global queue
     queue=[]
     try:
         processed_links
@@ -93,16 +85,13 @@ def check_new10Ks(request_tickers):
 
     else:
         print("no new 10Ks")
-
-    return s.enter(update_frame, 1, check_new10Ks, argument=[request_tickers])
+        return None
 
 
 def main(request_tickers):
     for n,i in enumerate(request_tickers):
         request_tickers[n]=companies[i]
-    s.enter(1, 1, check_new10Ks, argument=[request_tickers])
-    s.run()
-    return queue
+    return check_new10Ks(request_tickers)
 
 
 if __name__ == "__main__":
