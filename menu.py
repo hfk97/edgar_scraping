@@ -103,6 +103,8 @@ def main_menu():
 
             data_request(input_startyear, input_endyear, input_tickers)
 
+            print("Monitoring initiated, interrupt via ctrl+c\n")
+
             update_mode(input_tickers,update_intervall)
 
 
