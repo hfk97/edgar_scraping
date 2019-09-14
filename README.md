@@ -13,4 +13,15 @@
 </p>
 
 
+![Architecture - Visual Representation](./Architecture.png)
+
+
+<p><strong>Limitations:</strong>
+
+- Tables that span multiple pages
+
+- Stopping monitoring does not work in IDE
+
+</p>
+
 <p><strong>Possible future work:</strong> When starting on this project I was considering to create a SQL databank and save the actual datapoints (e.g. income, R&D spenfing, interest, Total Assets, Net cashflow from operating activities...) to it. However, during the course of my work I discovered that the entries of the balance sheet and income/cashflow statements were extremely different from company to company (i.e. ). Though I have thought about different ways to solve this issue (i.e. ), I've decided that implementing any of them would exceed the scope of a unpaid, private project. Therefore, for now, the standardisation and possible analysis of the data scraped remains future work.</p>
