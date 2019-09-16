@@ -20,7 +20,7 @@
 
 - Tables that span multiple pages
 
-- Stopping monitoring does not work if executing in IDE (uses Keyboard interrupt)
+- Stopping monitoring does not work during execution in IDE (uses Keyboard interrupt)
 
 </p>
 
