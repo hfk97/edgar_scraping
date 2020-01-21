@@ -160,7 +160,6 @@ def update_mode(input_tickers,update_intervall):
 
     processing_log = []
 
-        # hier loop
     while True:
         try:
             queue = RSS_monitor.main(input_tickers)
