@@ -31,7 +31,6 @@ def make_soup(url):
     try:
         page = urllib.request.urlopen(req)  # conntect to website
 
-    #Too generic
     except:
         print("An error occured.")
 
@@ -60,20 +59,17 @@ def load_obj(name ):
 
 
 
-
-
 def main(startyear=2015,endyear=2018,tickers=None):
 
+    print("companies.pkl is missing. The program now need to initialize all SP500 companies. This might take some time.")
     try:
         companies
     except NameError:
         try:
-            #companies = load_obj("sample_companies")
             companies=load_obj("companies")
 
         except FileNotFoundError:
             import init_companies
-            #companies = load_obj("sample_companies")
             companies=load_obj("companies")
 
     global queue
@@ -102,13 +98,11 @@ def main(startyear=2015,endyear=2018,tickers=None):
                 CIK) + "&type=10-K&dateb=&owner=exclude&count=40"
 
             print("Handling: " + t + ". \n")
-            #print(url)
 
             soup = make_soup(url)
 
             for table in soup.findAll('table'):
                 allrows = []
-                # print(table)
                 for row in table.findAll('tr'):
                     rowdata = []
                     for column in row.findAll('td'):
@@ -116,29 +110,21 @@ def main(startyear=2015,endyear=2018,tickers=None):
                             rowdata.append("https://www.sec.gov/" + column.findAll('a', href=True)[0]['href'])
                         else:
                             rowdata.append(column.text)
-                        # print(column.text)
                     allrows.append(rowdata)
 
                 for i in allrows:
                     try:
                         if i[0] == '10-K':
-                            year=int(i[3][0:4])
+                            year = int(i[3][0:4])
                             if year >= startyear and year <=endyear:
-                                # print(i[1],i[3][0:4])
 
                                 minisoup = make_soup(i[1])
 
-                                # print("level 2")
-
                                 for table in minisoup.findAll('table'):
                                     allrows = []
-                                    # print(table)
                                     for row in table.findAll('tr'):
                                         if "10-K" in row.text:
-                                            # print("https://www.sec.gov/" + row.findAll('a', href=True)[0]["href"])
                                             newlink="https://www.sec.gov/" + row.findAll('a', href=True)[0]["href"]
-
-                                            #print(c, int(i[3][0:4]) - 1,newlink)
 
                                             if newlink not in processed_links[t]:
                                                 queue.append((t, newlink,int(i[3][0:4]) - 1))
@@ -153,9 +139,6 @@ def main(startyear=2015,endyear=2018,tickers=None):
 
     if newlinks==1:
         save_obj(processed_links, "processed_links")
-        #print("Queue: ")
-        #for i in queue:
-        #    print(str(i) + "\n")
         return queue
 
     else:
