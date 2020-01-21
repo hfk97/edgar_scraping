@@ -23,24 +23,18 @@ re=getpack("re")
 
 
 def make_soup(url):
-
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
     req = Request(url, headers=headers)
-
     try:
         page = urllib.request.urlopen(req)  # conntect to website
-
     except:
         print("An error occured.")
-
     try:
         soup = BeautifulSoup(page, 'html.parser')
-
     except UnboundLocalError:
         print("The data could not be requested, please check your internet connection and try again.\n")
         sys.exit()
-
 
     return soup
 
