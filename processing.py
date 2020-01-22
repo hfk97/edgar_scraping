@@ -1,3 +1,4 @@
+# import the necessary packages
 import subprocess
 import sys
 import importlib
@@ -18,12 +19,16 @@ bs4=getpack("bs4")
 from bs4 import BeautifulSoup
 urllib=getpack("urllib")
 request=getpack("urllib.request")
+from urllib.request import Request
+import pickle
+# re is the regex package we will use to search specific (sub-)strings
 re=getpack("re")
+# datetime helps us handel date formatting
 datetime=getpack("datetime")
 
+# pandas allows us to create dataframes
 import pandas as pd
-import pickle
-from urllib.request import Request
+
 
 def load_obj(name ):
     with open(name+".pkl", 'rb') as pickle_file:
@@ -46,7 +51,7 @@ def make_soup(ticker,url,date):
 
     return parse10k(ticker,soup,date,url)
 
-
+# this function extracts and returns all tables from the soup handed to it
 def gettables(soup):
 
     tables=[]
@@ -94,14 +99,16 @@ def gettables(soup):
     return(tables)
 
 
+# this function is the main function used to parse Form 10K filings. Arguments: ticker, soup object, date and url
+def parse10k(ticker, soup, date, url):
 
-
-def parse10k(ticker,soup, date,url):
     tables = gettables(soup)
 
+    # the processing log established here is not displayed by default but can be used to troubleshoot if need be
     processing_log=""
     processing_log+="Log of " + ticker + str(date) +"\n"
 
+    # to identify balance sheet, income and cashflow statements I have collected the following substring patterns
     tcas = re.compile("total\scurrent\sassets")
     tcls = re.compile("total\scurrent\sliabilities")
     tas = re.compile("total\sassets")
@@ -119,10 +126,13 @@ def parse10k(ticker,soup, date,url):
     income_patterns = [rev, ninc, inctax]
     cash_flow_patterns = [ninc, ncpoa, ncpia, ncpfa]
 
+    # these will keep track of which tables have been found
     inc_found = False
     balance_found = False
     cash_found = False
 
+    # the following for loop goes through all tables in a document, identifies whether they are on of the 3 we are
+    # looking for and saves it if so.
     for i in tables:
 
         if not balance_found:
@@ -167,20 +177,17 @@ def parse10k(ticker,soup, date,url):
                 except AssertionError as e:
                     processing_log+="cash_flow_statement_ASSERTION_ERROR"+str(e)+"\n"
                     pass
-
-    #print(processing_log)
+    # uncomment the line below for troubleshooting purposes
+    # print(processing_log)
     del processing_log
+
+    # upon completion of the for loop we export the data
     try:
         return export_to_csv(ticker, date, balance_sheet, operation_statement, cash_flow_statement,url)
 
+    # if the export is not possible, due to the program not being able to extract the tables sought after, the full Form
+    # 10-K is downloaded for manual inspection
     except UnboundLocalError as e:
-        if not os.path.exists("./EdgarData"):
-            os.makedirs("EdgarData")
-        if not os.path.exists("./EdgarData/" + ticker):
-            os.makedirs("./EdgarData/" + ticker)
-        if not os.path.exists("./EdgarData/" + ticker + "/" + str(date)):
-            os.makedirs("./EdgarData/" + ticker + "/" + str(date))
-
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
         req = Request(url, headers=headers)
@@ -193,7 +200,7 @@ def parse10k(ticker,soup, date,url):
 
 
 def export_to_csv(ticker,year,balance,operation,cash,url):
-
+    # if the following folder structure does not exist yet, create it
     if not os.path.exists("./EdgarData"):
         os.makedirs("EdgarData")
     if not os.path.exists("./EdgarData/"+ticker):
@@ -201,6 +208,7 @@ def export_to_csv(ticker,year,balance,operation,cash,url):
     if not os.path.exists("./EdgarData/"+ticker+"/"+str(year)):
         os.makedirs("./EdgarData/" + ticker + "/" + str(year))
 
+        # export the tables
         balance.to_csv (r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker+str(year)+"Balance_Sheet.csv")
         operation.to_csv(r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year) + "Operation_Statement.csv")
         cash.to_csv(r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year) + "Cashflow_statement.csv")
@@ -212,19 +220,11 @@ def export_to_csv(ticker,year,balance,operation,cash,url):
         page = urllib.request.urlopen(req)
 
         filing=page.read()
-
+        # add the full 10-K, in-case the user wants to see other details
         with open("./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year)+"10k.html", 'w') as f:
             f.write(filing.decode('utf-8'))
-
 
         return "Successfull extraction - "+ticker+str(year)
 
     else:
         return "This data already exists"
-
-
-
-#10ks
-#https://www.sec.gov/Archives/edgar/data/2488/000000248819000011/amd-12292018x10k.htm
-#https://www.sec.gov/Archives/edgar/data/1652044/000165204419000004/goog10-kq42018.htm#s60D13494C77354D8AED0E72D61E53B98
-#https://www.sec.gov//Archives/edgar/data/1045810/000104581011000015/fy2011form10k.htm

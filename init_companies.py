@@ -1,9 +1,8 @@
+# import all necessary packages
 import subprocess
 import sys
 import importlib
 
-from urllib.request import Request
-import pickle
 
 # function that imports a library if it is installed, else installs it and then imports it
 def getpack(package):
@@ -19,7 +18,8 @@ bs4=getpack("bs4")
 from bs4 import BeautifulSoup
 urllib=getpack("urllib")
 request=getpack("urllib.request")
-re=getpack("re")
+from urllib.request import Request
+import pickle
 
 
 def save_obj(obj, name ):
@@ -31,10 +31,10 @@ def load_obj(name ):
     with open(name+".pkl", 'rb') as pickle_file:
         return pickle.load(pickle_file)
 
-# get the tickers of all stocks in the SP500
+# get the tickers of all stocks in the SP500 from wikipedia
 def sp500_tickers():
-    resp = requests.get('http://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
-    soup = bs.BeautifulSoup(resp.text, 'lxml')
+    resp = request.get('http://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
+    soup = BeautifulSoup(resp.text, 'lxml')
     table = soup.find('table', {'class': 'wikitable sortable'})
     tickers = []
     for row in table.findAll('tr')[1:]:
@@ -44,15 +44,15 @@ def sp500_tickers():
 
     return tickers
 
-
+# initialize the companies dictionary
 def initialize_companies():
-    # do this dynamically
+    # get SP500 tickers
     SP500 = sp500_tickers()
-
+    # create the empty dictionary
     Companies={}
 
     n=0
-    #for i in sample:
+    # for every ticker in the list of SP500 tickers extract name and CIK from EDGAR and store them in the dictionary
     for i in SP500:
         print(f"Initializing companies. ({n}/{len(SP500)})", end='\r')
         if "." in i:
@@ -79,12 +79,9 @@ def initialize_companies():
         Companies[i] = [i, name, CIK]
         n+=1
 
+    # save the newly collected identifiers
     save_obj(Companies, "companies")
 
     return
 
 initialize_companies()
-
-
-
-

@@ -98,4 +98,4 @@ if __name__ == "__main__":
     main()
 
 
-#This program checks for new 10Ks every update frame (in seks) if there are new 10Ks to process it gives back a list of tuples with company name and link to the form
+#This script checks for new 10Ks every update frame (in seks) if there are new 10Ks to process it gives back a list of tuples with company name and link to the form

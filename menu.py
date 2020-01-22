@@ -1,8 +1,7 @@
+# import necessary packages
 import subprocess
 import sys
 import importlib
-
-
 
 # function that imports a library if it is installed, else installs it and then imports it
 def getpack(package):
@@ -14,13 +13,13 @@ def getpack(package):
         return (importlib.import_module(package))
         # import package
 
-datetime=getpack("datetime")
-time=getpack("time")
-
+datetime = getpack("datetime")
+time = getpack("time")
 
 bs4 = getpack("bs4")
 urllib = getpack("urllib")
 requests = getpack("urllib.request")
+
 
 # get the tickers of all stocks in the SP500
 def sp500_tickers():
@@ -34,7 +33,6 @@ def sp500_tickers():
         tickers.append(ticker)
 
     return tickers
-
 
 
 def main_menu():
@@ -92,9 +90,6 @@ def main_menu():
 
             update_mode(input_tickers,update_intervall)
 
-
-
-
         elif choice == 2:
             input_tickers=[]
             for ticker in input(
@@ -117,8 +112,6 @@ def main_menu():
             print("\n\n")
 
             data_request(input_startyear,input_endyear,input_tickers)
-
-
         else:
             print("Invalid selection. \n")
 
@@ -149,9 +142,6 @@ def data_request(start_year,end_year,tickers):
 
     for i in processing_log:
         print(i)
-
-
-
 
 
 def update_mode(input_tickers,update_intervall):
