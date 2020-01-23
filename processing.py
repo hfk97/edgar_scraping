@@ -5,37 +5,37 @@ import importlib
 import os
 
 
-
 # function that imports a library if it is installed, else installs it and then imports it
 def getpack(package):
     try:
-        return (importlib.import_module(package))
+        return importlib.import_module(package)
     except ImportError:
         subprocess.call([sys.executable, "-m", "pip", "install", package])
-        return (importlib.import_module(package))
+        return importlib.import_module(package)
 
 
-bs4=getpack("bs4")
+bs4 = getpack("bs4")
 from bs4 import BeautifulSoup
-urllib=getpack("urllib")
-request=getpack("urllib.request")
+urllib = getpack("urllib")
+request = getpack("urllib.request")
 from urllib.request import Request
 import pickle
-# re is the regex package we will use to search specific (sub-)strings
-re=getpack("re")
-# datetime helps us handel date formatting
-datetime=getpack("datetime")
-
 # pandas allows us to create dataframes
 import pandas as pd
 
+# re is the regex package we will use to search specific (sub-)strings
+re = getpack("re")
+# datetime helps us handel date formatting
+datetime = getpack("datetime")
 
-def load_obj(name ):
+
+def load_obj(name):
     with open(name+".pkl", 'rb') as pickle_file:
         return pickle.load(pickle_file)
 
 
-def make_soup(ticker,url,date):
+# function that takes a ticker, url and date, adds a soup object for the respective url and hands the data to parse10k
+def make_soup(ticker, url, date):
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
@@ -49,54 +49,51 @@ def make_soup(ticker,url,date):
 
     soup = BeautifulSoup(page, 'html.parser')
 
-    return parse10k(ticker,soup,date,url)
+    return parse10k(ticker, soup, date, url)
+
 
 # this function extracts and returns all tables from the soup handed to it
 def gettables(soup):
 
-    tables=[]
+    tables = []
 
     for table in soup.findAll('table'):
-        newtable={}
-        #print(table)
+        newtable = {}
         for row in table.findAll('tr'):
-            rowdata=[]
+            rowdata = []
             for column in row.findAll('td'):
                 rowdata.append(column.text.strip(" "))
-                #print(column.text)
 
-            for n,i in enumerate(rowdata):
-                rowdata[n]=" ".join(i.split())
-                pattern=re.compile(r'^\(\d+[.,]?\d*$')
+            for n, i in enumerate(rowdata):
+                rowdata[n] = " ".join(i.split())
+                pattern = re.compile(r'^\(\d+[.,]?\d*$')
 
                 if pattern.match(rowdata[n]) is not None:
-                    rowdata[n]=rowdata[n].replace('(','-')
+                    rowdata[n] = rowdata[n].replace('(', '-')
 
-            dropitems = ['', '$',')']
-
+            dropitems = ['', '$', ')']
 
             for i in dropitems:
                 while i in rowdata:
                     rowdata.remove(i)
 
-            if len(rowdata)>4:
-                ok=re.compile("\(?-?\d+(,\d+)?\)?")
-                for n,i in enumerate(rowdata):
-                    if n>0 and ok.match(i) is None:
+            if len(rowdata) > 4:
+                ok = re.compile("\(?-?\d+(,\d+)?\)?")
+                for n, i in enumerate(rowdata):
+                    if n > 0 and ok.match(i) is None:
                         rowdata.remove(rowdata[n])
                         break
 
-            if len(rowdata)>2:
-                newtable[rowdata[0]]= rowdata[1:]
+            if len(rowdata) > 2:
+                newtable[rowdata[0]] = rowdata[1:]
 
-
-        if len(newtable)>0:
+        if len(newtable) > 0:
             tables.append(newtable)
         del newtable
 
     del table
 
-    return(tables)
+    return tables
 
 
 # this function is the main function used to parse Form 10K filings. Arguments: ticker, soup object, date and url
@@ -105,8 +102,8 @@ def parse10k(ticker, soup, date, url):
     tables = gettables(soup)
 
     # the processing log established here is not displayed by default but can be used to troubleshoot if need be
-    processing_log=""
-    processing_log+="Log of " + ticker + str(date) +"\n"
+    processing_log = ""
+    processing_log += f"Log of {ticker}{date}\n"
 
     # to identify balance sheet, income and cashflow statements I have collected the following substring patterns
     tcas = re.compile("total\scurrent\sassets")
@@ -120,7 +117,6 @@ def parse10k(ticker, soup, date, url):
     ncpoa = re.compile("(net\s)?cash\s\D+\soperating\sactivities$")
     ncpia = re.compile("(net\s)?cash\s\D+\sinvesting\sactivities$")
     ncpfa = re.compile("(net\s)?cash\s\D+\sfinancing\sactivities$")
-
 
     balance_patterns = [tcas, tcls, tas]
     income_patterns = [rev, ninc, inctax]
@@ -137,19 +133,17 @@ def parse10k(ticker, soup, date, url):
 
         if not balance_found:
             if all(any(j.match(v.lower()) is not None for v in i)for j in balance_patterns):
-                #print("Balance sheet: ", i)
                 try:
                     balance_sheet_dict = i
                     balance_sheet = pd.DataFrame.from_dict(balance_sheet_dict, orient='index',
                                                            columns=[int(date), int(date) - 1])
                     balance_found = True
                 except AssertionError as e:
-                    processing_log+="balance_sheet_ASSERTION_ERROR" + str(e) + "\n"
+                    processing_log += f"balance_sheet_ASSERTION_ERROR {e}\n"
                     pass
 
         if not inc_found:
             if all(any(j.match(v.lower()) is not None for v in i)for j in income_patterns):
-                #print("Income statement: ", i)
                 try:
                     operation_statement_dict = i
                     # break to avoid catching adjusted stuff
@@ -158,12 +152,11 @@ def parse10k(ticker, soup, date, url):
                     operation_statement = operation_statement.iloc[1:]
                     inc_found = True
                 except AssertionError as e:
-                    processing_log+="operation_statement_ASSERTION_ERROR"+str(e)+"\n"
+                    processing_log += f"operation_statement_ASSERTION_ERROR {e}\n"
                     pass
 
         if not cash_found:
             if all(any(j.match(v.lower()) is not None for v in i)for j in cash_flow_patterns):
-                #print("Cashflow statement: ", i)
                 try:
                     cash_flow_statement_dict = i
                     cash_flow_statement = pd.DataFrame.from_dict(cash_flow_statement_dict, orient='index',
@@ -175,7 +168,7 @@ def parse10k(ticker, soup, date, url):
                         cash_flow_statement.drop("Fiscal Year", inplace=True)
 
                 except AssertionError as e:
-                    processing_log+="cash_flow_statement_ASSERTION_ERROR"+str(e)+"\n"
+                    processing_log += f"cash_flow_statement_ASSERTION_ERROR {e}\n"
                     pass
     # uncomment the line below for troubleshooting purposes
     # print(processing_log)
@@ -183,7 +176,7 @@ def parse10k(ticker, soup, date, url):
 
     # upon completion of the for loop we export the data
     try:
-        return export_to_csv(ticker, date, balance_sheet, operation_statement, cash_flow_statement,url)
+        return export_to_csv(ticker, date, balance_sheet, operation_statement, cash_flow_statement, url)
 
     # if the export is not possible, due to the program not being able to extract the tables sought after, the full Form
     # 10-K is downloaded for manual inspection
@@ -193,38 +186,40 @@ def parse10k(ticker, soup, date, url):
         req = Request(url, headers=headers)
         page = urllib.request.urlopen(req)
         filing = page.read()
-        with open("./EdgarData/" + ticker + "/" + str(date) + "/" + ticker + str(date) + "10k.html", 'w') as f:
+        with open(f"./EdgarData/{ticker}/{date}/{ticker}{date}10k.html", 'w') as f:
             f.write(filing.decode('utf-8'))
 
-        return "There was an issue during data extraction (UnboundLocalError: "+str(e)+ ") for "+ticker+str(date)+" the respective 10k was downloaded and saved for manual inspection. For reasons please consider the limitations in this projects Readme file.\n"
+        return f"There was an issue during data extraction (UnboundLocalError:{e}) for {ticker}{date} " \
+            f"the respective 10k was downloaded and saved for manual inspection. For reasons please consider the " \
+            f"limitations in this projects Readme file.\n"
 
 
-def export_to_csv(ticker,year,balance,operation,cash,url):
+def export_to_csv(ticker, year, balance, operation, cash, url):
     # if the following folder structure does not exist yet, create it
     if not os.path.exists("./EdgarData"):
         os.makedirs("EdgarData")
-    if not os.path.exists("./EdgarData/"+ticker):
-        os.makedirs("./EdgarData/"+ticker)
-    if not os.path.exists("./EdgarData/"+ticker+"/"+str(year)):
-        os.makedirs("./EdgarData/" + ticker + "/" + str(year))
+    if not os.path.exists(f"./EdgarData/{ticker}"):
+        os.makedirs(f"./EdgarData/{ticker}")
+    if not os.path.exists(f"./EdgarData/{ticker}/{year}"):
+        os.makedirs(f"./EdgarData/{ticker}/{year}")
 
         # export the tables
-        balance.to_csv (r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker+str(year)+"Balance_Sheet.csv")
-        operation.to_csv(r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year) + "Operation_Statement.csv")
-        cash.to_csv(r"./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year) + "Cashflow_statement.csv")
+        balance.to_csv(rf"./EdgarData/{ticker}/{year}/{ticker}{year}Balance_Sheet.csv")
+        operation.to_csv(rf"./EdgarData/{ticker}/{year}/{ticker}{year}Operation_Statement.csv")
+        cash.to_csv(rf"./EdgarData/{ticker}/{year}/{ticker}{year}Cashflow_statement.csv")
 
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
+            'User-Agent':'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
         req = Request(url, headers=headers)
 
         page = urllib.request.urlopen(req)
 
-        filing=page.read()
+        filing = page.read()
         # add the full 10-K, in-case the user wants to see other details
-        with open("./EdgarData/" + ticker + "/" + str(year) + "/" + ticker + str(year)+"10k.html", 'w') as f:
+        with open(f"./EdgarData/{ticker}/{year}/{ticker}{year}10k.html", 'w') as f:
             f.write(filing.decode('utf-8'))
 
-        return "Successfull extraction - "+ticker+str(year)
+        return f"Successful extraction - {ticker}{year}"
 
     else:
         return "This data already exists"

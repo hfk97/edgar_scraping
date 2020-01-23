@@ -3,6 +3,7 @@ import subprocess
 import sys
 import importlib
 
+
 # function that imports a library if it is installed, else installs it and then imports it
 def getpack(package):
     try:
@@ -13,7 +14,6 @@ def getpack(package):
         return (importlib.import_module(package))
         # import package
 
-# download/import the libraries we need to navigate webpages and process their content
 
 # urllib enables us to work with urls
 urllib = getpack("urllib")
@@ -27,7 +27,6 @@ from bs4 import BeautifulSoup
 # pickle allows us to store python objects, in this case dictionnairies, we will use it to store important
 # information across sessions
 import pickle
-
 
 
 # This function takes a web-adress as input and returns the parsed html elements
@@ -48,47 +47,48 @@ def make_soup(url):
     return soup
 
 
-
 # this function saves a python object (obj) under a specified name
-def save_obj(obj, name ):
+def save_obj(obj, name):
     with open(name+".pkl", 'wb') as pickle_file:
-        pickle.dump(obj, pickle_file,pickle.HIGHEST_PROTOCOL)
+        pickle.dump(obj, pickle_file, pickle.HIGHEST_PROTOCOL)
+
 
 # this function loads a pickled object
-def load_obj(name ):
+def load_obj(name):
     with open(name+".pkl", 'rb') as pickle_file:
         return pickle.load(pickle_file)
 
 
 # this function takes a start and endyear, as well as a list of tickers and returns a list containing the urls
 # under which the respective 10ks can be found
-def main(startyear,endyear,tickers):
+def main(startyear, endyear, tickers):
 
     # try to load and else initialize companies dictionary (this contains ticker, name and CIK for all SP500 companies)
     try:
         companies
     except NameError:
         try:
-            companies=load_obj("companies")
+            companies = load_obj("companies")
 
         except FileNotFoundError:
-            print("companies.pkl is missing. The program now need to initialize all SP500 companies. This might take some time.")
+            print("companies.pkl is missing. The program now need to initialize all SP500 companies. "
+                  "This might take some time.")
             import init_companies
-            companies=load_obj("companies")
+            companies = load_obj("companies")
 
     global queue
-    queue=[]
+    queue = []
 
     # load and else initialize the processed_links log
     try:
         processed_links
     except NameError:
         try:
-            processed_links=load_obj("processed_links")
+            processed_links = load_obj("processed_links")
         except FileNotFoundError:
-            processed_links={}
+            processed_links = {}
             for i in companies:
-                processed_links[i]=[]
+                processed_links[i] = []
 
     # for each selected ticker
     for t in tickers:
@@ -99,10 +99,9 @@ def main(startyear,endyear,tickers):
             # and appends them to the queue, if they have not been processed before
             CIK = companies[t][2]
 
-            url = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=" + str(
-                CIK) + "&type=10-K&dateb=&owner=exclude&count=40"
+            url = f"https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK={CIK}&type=10-K&dateb=&owner=exclude&count=40"
 
-            print("Handling: " + t + ". \n")
+            print(f"Handling: {t}.\n")
 
             soup = make_soup(url)
 
@@ -121,7 +120,7 @@ def main(startyear,endyear,tickers):
                     try:
                         if i[0] == '10-K':
                             year = int(i[3][0:4])
-                            if year >= startyear and year <=endyear:
+                            if startyear <= year <= endyear:
 
                                 minisoup = make_soup(i[1])
 
@@ -129,10 +128,10 @@ def main(startyear,endyear,tickers):
                                     allrows = []
                                     for row in table.findAll('tr'):
                                         if "10-K" in row.text:
-                                            newlink="https://www.sec.gov/" + row.findAll('a', href=True)[0]["href"]
+                                            newlink = "https://www.sec.gov/" + row.findAll('a', href=True)[0]["href"]
 
                                             if newlink not in processed_links[t]:
-                                                queue.append((t, newlink,int(i[3][0:4]) - 1))
+                                                queue.append((t, newlink, int(i[3][0:4]) - 1))
                                                 processed_links[t].append(newlink)
 
 
@@ -150,6 +149,7 @@ def main(startyear,endyear,tickers):
         print("Something went wrong no new data was found or data already initialized")
         return None
 
+
 # the line below allows us to easily run this script for testing purposes
 if __name__ == "__main__":
-    main(2008,2014,["INTC","AMD","AMAT"])
+    main(2008, 2014, ["INTC", "AMD", "AMAT"])
