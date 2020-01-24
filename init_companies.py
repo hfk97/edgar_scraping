@@ -17,7 +17,7 @@ def getpack(package):
 bs4 = getpack("bs4")
 from bs4 import BeautifulSoup
 urllib = getpack("urllib")
-request = getpack("urllib.request")
+#request = getpack("urllib.request")
 from urllib.request import Request
 import pickle
 
@@ -32,31 +32,15 @@ def load_obj(name):
         return pickle.load(pickle_file)
 
 
-# get the tickers of all stocks in the SP500 from wikipedia
-def sp500_tickers():
-    resp = request.get('http://en.wikipedia.org/wiki/List_of_S%26P_500_companies')
-    soup = BeautifulSoup(resp.text, 'lxml')
-    table = soup.find('table', {'class': 'wikitable sortable'})
-    tickers = []
-    for row in table.findAll('tr')[1:]:
-        ticker = row.findAll('td')[0].text
-        ticker = ticker.replace("\n", "")
-        tickers.append(ticker)
-
-    return tickers
-
-
 # initialize the companies dictionary
-def initialize_companies():
-    # get SP500 tickers
-    SP500 = sp500_tickers()
+def initialize_companies(tickers):
     # create the empty dictionary
     Companies = {}
 
     n = 0
-    # for every ticker in the list of SP500 tickers extract name and CIK from EDGAR and store them in the dictionary
-    for i in SP500:
-        print(f"Initializing companies. ({n}/{len(SP500)})", end='\r')
+    # for every ticker in the list of tickers extract name and CIK from EDGAR and store them in the dictionary
+    for i in tickers:
+        print(f"Initializing companies. ({n}/{len(tickers)})", end='\r')
         if "." in i:
             i = i.replace(".", "")
 
@@ -85,6 +69,3 @@ def initialize_companies():
     save_obj(Companies, "companies")
 
     return
-
-
-initialize_companies()

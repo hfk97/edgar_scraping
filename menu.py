@@ -7,6 +7,7 @@ import importlib
 import find_data
 import RSS_monitor
 import processing
+import init_companies
 
 
 def getpack(package):
@@ -18,12 +19,12 @@ def getpack(package):
         return importlib.import_module(package)
         # import package
 
+
 datetime = getpack("datetime")
 time = getpack("time")
-
 bs4 = getpack("bs4")
-urllib = getpack("urllib")
-requests = getpack("urllib.request")
+requests=getpack("requests")
+import pickle
 
 
 # get the tickers of all stocks in the SP500
@@ -40,9 +41,27 @@ def sp500_tickers():
     return tickers
 
 
+# this function loads a pickled object
+def load_obj(name):
+    with open(name+".pkl", 'rb') as pickle_file:
+        return pickle.load(pickle_file)
+
+
 def main_menu():
     print("started")
+
+    # import SP500 companies
     SP500 = sp500_tickers()
+
+    # try to load and else initialize companies dictionary (this contains ticker, name and CIK for all SP500 companies)
+    try:
+        companies = load_obj("companies")
+
+    except FileNotFoundError:
+        print("companies.pkl is missing. The program now need to initialize all SP500 companies."
+              "This might take some time.")
+        init_companies.initialize_companies(SP500)
+        companies = load_obj("companies")
 
     # short introduction
     print(
@@ -69,57 +88,38 @@ def main_menu():
                 break
 
         # continuous monitoring
-        elif choice == 1:
+        elif choice == 1 or choice == 2:
             input_tickers = []
             for ticker in input("Please enter the ticker or tickers of the respective companies (separate them with a comma): \n").split(','):
-                input_tickers.append(ticker)
-
-            for i in input_tickers:
-                if i not in SP500:
-                    print(str(i) + " is not a SP500 company ticker, it will be skipped.\n")
-                    input_tickers.remove(i)
-
-            if len(input_tickers) == 0:
-                print("No valid tickers have been chosen.")
-                continue
-
-            input_startyear = int(input("Please insert the startyear (must be >= 2008): "))
-            print("\n")
-
-            input_endyear = datetime.datetime.now().year
-            print("\n")
-
-            update_intervall = int(input("Please Select an update intervall (in seconds): "))
-            print("\n")
-
-            data_request(input_startyear, input_endyear, input_tickers)
-
-            print("Monitoring initiated, interrupt using 'ctrl+c'\n")
-
-            update_mode(input_tickers, update_intervall)
-
-        # one-time request
-        elif choice == 2:
-            input_tickers = []
-            for ticker in input("Please enter the ticker or tickers of the respective companies (seperate them with a comma): \n").split(','):
-                input_tickers.append(ticker)
-
-            for i in input_tickers:
-                if i not in SP500:
-                    print(str(i) + " is not a SP500 company ticker, it will be skipped.\n")
-                    input_tickers.remove(i)
+                ticker = ticker.replace(" ","")
+                if ticker in SP500:
+                    input_tickers.append(companies[ticker])
+                else:
+                    print(str(ticker) + " is not a valid SP500 company ticker, it will be skipped.\n")
+                    continue
 
             if len(input_tickers) == 0:
                 print("No valid tickers have been chosen.")
                 continue
 
-            print("Please select the time-frame for which you would like to extract the data. \n")
             input_startyear = int(input("Please insert the start year (must be >= 2008): "))
             print("\n")
-            input_endyear = int(input("Please insert the end year: "))
-            print("\n\n")
+
+            if choice == 1:
+                input_endyear = datetime.datetime.now().year
+                update_intervall = int(input("Please Select an update intervall (in seconds): "))
+                print("\n")
+
+            else:
+                input_endyear = int(input(f"Please insert the end year (must be < {datetime.datetime.now().year}): "))
+                print("\n")
 
             data_request(input_startyear, input_endyear, input_tickers)
+
+            if choice == 1:
+                print("Monitoring initiated, interrupt using 'ctrl+c'\n")
+                update_mode(input_tickers, update_intervall)
+
         else:
             print("Invalid selection. \n")
 
@@ -132,6 +132,7 @@ def data_request(start_year, end_year, tickers):
     processing_log = []
 
     for q in queue:
+        print(f"Processing: {q[1]}.\n")
         processing_log_entry = ""
         try:
             processing_log_entry += f"Log of {q} "
@@ -158,7 +159,7 @@ def update_mode(input_tickers, update_intervall):
     # tickers are monitored until keyboard interrupt (ctrl+c) is used
     while True:
         try:
-            queue = RSS_monitor.main(input_tickers)
+            queue = RSS_monitor.check_new10Ks(input_tickers)
 
             if queue is not None:
                 print("Queue: ")
@@ -192,7 +193,6 @@ def update_mode(input_tickers, update_intervall):
             break
 
     return
-
 
 if __name__ == "__main__":
     main_menu()

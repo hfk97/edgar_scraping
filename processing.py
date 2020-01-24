@@ -17,7 +17,6 @@ def getpack(package):
 bs4 = getpack("bs4")
 from bs4 import BeautifulSoup
 urllib = getpack("urllib")
-request = getpack("urllib.request")
 from urllib.request import Request
 import pickle
 # pandas allows us to create dataframes
@@ -27,11 +26,6 @@ import pandas as pd
 re = getpack("re")
 # datetime helps us handel date formatting
 datetime = getpack("datetime")
-
-
-def load_obj(name):
-    with open(name+".pkl", 'rb') as pickle_file:
-        return pickle.load(pickle_file)
 
 
 # function that takes a ticker, url and date, adds a soup object for the respective url and hands the data to parse10k
@@ -175,6 +169,15 @@ def parse10k(ticker, soup, date, url):
     del processing_log
 
     # upon completion of the for loop we export the data
+
+    # if the following folder structure does not exist yet, create it
+    if not os.path.exists("./EdgarData"):
+        os.makedirs("EdgarData")
+    if not os.path.exists(f"./EdgarData/{ticker[0]}"):
+        os.makedirs(f"./EdgarData/{ticker[0]}")
+    if not os.path.exists(f"./EdgarData/{ticker[0]}/{date}"):
+        os.makedirs(f"./EdgarData/{ticker[0]}/{date}")
+
     try:
         return export_to_csv(ticker, date, balance_sheet, operation_statement, cash_flow_statement, url)
 
@@ -186,40 +189,31 @@ def parse10k(ticker, soup, date, url):
         req = Request(url, headers=headers)
         page = urllib.request.urlopen(req)
         filing = page.read()
-        with open(f"./EdgarData/{ticker}/{date}/{ticker}{date}10k.html", 'w') as f:
+
+        with open(f"./EdgarData/{ticker[0]}/{date}/{ticker[0]}{date}10k.html", 'w') as f:
             f.write(filing.decode('utf-8'))
 
-        return f"There was an issue during data extraction (UnboundLocalError:{e}) for {ticker}{date} " \
+        return f"There was an issue during data extraction (UnboundLocalError:{e}) for {ticker[0]}{date} " \
             f"the respective 10k was downloaded and saved for manual inspection. For reasons please consider the " \
             f"limitations in this projects Readme file.\n"
 
 
 def export_to_csv(ticker, year, balance, operation, cash, url):
-    # if the following folder structure does not exist yet, create it
-    if not os.path.exists("./EdgarData"):
-        os.makedirs("EdgarData")
-    if not os.path.exists(f"./EdgarData/{ticker}"):
-        os.makedirs(f"./EdgarData/{ticker}")
-    if not os.path.exists(f"./EdgarData/{ticker}/{year}"):
-        os.makedirs(f"./EdgarData/{ticker}/{year}")
 
-        # export the tables
-        balance.to_csv(rf"./EdgarData/{ticker}/{year}/{ticker}{year}Balance_Sheet.csv")
-        operation.to_csv(rf"./EdgarData/{ticker}/{year}/{ticker}{year}Operation_Statement.csv")
-        cash.to_csv(rf"./EdgarData/{ticker}/{year}/{ticker}{year}Cashflow_statement.csv")
+    # export the tables
+    balance.to_csv(rf"./EdgarData/{ticker[0]}/{year}/{ticker[0]}{year}Balance_Sheet.csv")
+    operation.to_csv(rf"./EdgarData/{ticker[0]}/{year}/{ticker[0]}{year}Operation_Statement.csv")
+    cash.to_csv(rf"./EdgarData/{ticker[0]}/{year}/{ticker[0]}{year}Cashflow_statement.csv")
 
-        headers = {
-            'User-Agent':'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
-        req = Request(url, headers=headers)
+    headers = {
+        'User-Agent':'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.3'}
+    req = Request(url, headers=headers)
 
-        page = urllib.request.urlopen(req)
+    page = urllib.request.urlopen(req)
 
-        filing = page.read()
-        # add the full 10-K, in-case the user wants to see other details
-        with open(f"./EdgarData/{ticker}/{year}/{ticker}{year}10k.html", 'w') as f:
-            f.write(filing.decode('utf-8'))
+    filing = page.read()
+    # add the full 10-K, in-case the user wants to see other details
+    with open(f"./EdgarData/{ticker[0]}/{year}/{ticker[0]}{year}10k.html", 'w') as f:
+        f.write(filing.decode('utf-8'))
 
-        return f"Successful extraction - {ticker}{year}"
-
-    else:
-        return "This data already exists"
+    return f"Successful extraction - {ticker[0]}{year}"
